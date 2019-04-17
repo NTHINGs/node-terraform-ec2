@@ -1,0 +1,11 @@
+web:
+  build: ./app
+  restart: always
+
+nginx:
+  build: ./nginx/
+  restart: always
+  ports:
+    - "80:80"
+  links:
+    - web:web
