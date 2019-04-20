@@ -61,7 +61,7 @@ typings/
 .next
 
 # Keys
-example_keys/
+keys/
 
 # Local .terraform directories
 **/.terraform/*

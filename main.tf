@@ -48,6 +48,13 @@ resource "aws_security_group" "allow_web" {
     protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  
+  ingress {
+    from_port = 80
+    to_port   = 8081
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   egress {
     from_port = 0
@@ -59,7 +66,7 @@ resource "aws_security_group" "allow_web" {
 
 resource "aws_key_pair" "auth" {
   key_name = "example_key"
-  public_key = "${file("example_keys/public")}"
+  public_key = "${file("keys/public")}"
 }
 
 resource "aws_instance" "ec2" {
@@ -68,7 +75,7 @@ resource "aws_instance" "ec2" {
   subnet_id = "${element(data.aws_subnet_ids.all.ids, 0)}"
   vpc_security_group_ids = ["${aws_security_group.allow_web.id}"]
   associate_public_ip_address = true
-  key_name = "${aws_key_pair.auth.name}"
+  key_name = "${aws_key_pair.auth.key_name}"
   tags = "${map("Name", "nodejs-example")}"
 
   provisioner "file" {
@@ -77,7 +84,7 @@ resource "aws_instance" "ec2" {
     connection {
       type = "ssh"
       user = "ec2-user"
-      private_key = "${file("example_keys/private")}"
+      private_key = "${file("keys/private")}"
     }
   }
 
@@ -86,13 +93,14 @@ resource "aws_instance" "ec2" {
       "curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh | bash",
       ". ~/.nvm/nvm.sh",
       "nvm install 8",
-      "node /home/ec2-user/app/index.js"
+      "npm install pm2 -g",
+      "pm2 start /home/ec2-user/app/index.js"
     ],
 
     connection {
       type = "ssh"
       user = "ec2-user"
-      private_key = "${file("example_keys/private")}"
+      private_key = "${file("keys/private")}"
     }
   }
 }
