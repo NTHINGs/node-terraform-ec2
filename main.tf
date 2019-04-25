@@ -43,15 +43,8 @@ resource "aws_security_group" "allow_web" {
   vpc_id = "${data.aws_vpc.default.id}"
 
   ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  
-  ingress {
-    from_port = 80
-    to_port   = 8081
+    from_port = 0
+    to_port   = 0
     protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -89,13 +82,7 @@ resource "aws_instance" "ec2" {
   }
 
   provisioner "remote-exec" {
-    inline = [
-      "curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh | bash",
-      ". ~/.nvm/nvm.sh",
-      "nvm install 8",
-      "npm install pm2 -g",
-      "pm2 start /home/ec2-user/app/index.js"
-    ],
+    script = "./node.sh"
 
     connection {
       type = "ssh"
@@ -103,6 +90,10 @@ resource "aws_instance" "ec2" {
       private_key = "${file("keys/private")}"
     }
   }
+}
+
+output "public_dns" {
+  value = "${aws_instance.ec2.public_dns}"
 }
 
 output "public_ip" {
